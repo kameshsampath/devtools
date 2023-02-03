@@ -1,0 +1,14 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - k3d/melange.yaml
+    generates:
+      - packages/**/k3d-5.4.7-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --signing-key /work/melange.rsa k3d/melange.yaml
+  

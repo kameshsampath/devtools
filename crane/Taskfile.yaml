@@ -1,0 +1,14 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - crane/melange.yaml
+    generates:
+      - packages/**/crane-0.13.0-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --signing-key /work/melange.rsa crane/melange.yaml
+  

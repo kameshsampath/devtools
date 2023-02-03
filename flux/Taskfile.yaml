@@ -1,0 +1,14 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - flux/melange.yaml
+    generates:
+      - packages/**/flux-0.39.0-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --signing-key /work/melange.rsa flux/melange.yaml
+  

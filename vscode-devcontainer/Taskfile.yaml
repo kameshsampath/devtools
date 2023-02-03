@@ -1,0 +1,14 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - vscode-devcontainer/melange.yaml
+    generates:
+      - packages/**/vscode-devcontainer-0.0.1-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build --arch $(uname -m) --signing-key /work/melange.rsa vscode-devcontainer/melange.yaml
+  

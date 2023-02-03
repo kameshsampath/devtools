@@ -1,0 +1,44 @@
+package:
+  name: flux
+  version: 0.39.0
+  epoch: 0
+  description: "fluxcd cli"
+  target-architecture:
+    - amd64
+    - arm64
+  copyright:
+    - paths:
+      - "*"
+      license: Apache License 2.0
+  dependencies:
+    runtime:
+
+environment:
+  contents:
+    repositories:
+      - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    packages:
+      - alpine-baselayout-data
+      - busybox
+      - ca-certificates-bundle
+
+pipeline:
+  - uses: fetch
+    if: ${{build.arch}} == 'x86_64'
+    with:
+      uri: https://github.com/fluxcd/flux2/releases/download/v${{package.version}}/flux_${{package.version}}_linux_amd64.tar.gz
+      expected-sha256: 11431aab00e967e93484cb4aa9936f2634726aeb8ee692eae40d2e581a305e0d
+  - uses: fetch
+    if: ${{build.arch}} == 'aarch64'
+    with:
+      uri: https://github.com/fluxcd/flux2/releases/download/v${{package.version}}/flux_${{package.version}}_linux_arm64.tar.gz
+      expected-sha256: 1afe196d5e5d10181b5724088848734e59d817278fce8c50b58a11dc2322afca
+  - runs: |
+      set +x 
+      DEST_DIR="${{targets.destdir}}/usr/local/bin"
+      mkdir -p "${DEST_DIR}"
+      # only if flux package is available
+      if [ -f flux ];
+      then
+        install -Dm755 flux $DEST_DIR/flux
+      fi

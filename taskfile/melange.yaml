@@ -1,0 +1,43 @@
+package:
+  name: taskfile
+  version: 3.20.0
+  epoch: 0
+  description: "a task runner / simpler Make alternative written in Go"
+  target-architecture:
+    - amd64
+    - arm64
+  copyright:
+    - paths:
+      - "*"
+      license: MIT
+  dependencies:
+    runtime:
+
+environment:
+  contents:
+    repositories:
+      - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    packages:
+      - alpine-baselayout-data
+      - busybox
+      - ca-certificates-bundle
+
+pipeline:
+  - uses: fetch
+    if: ${{build.arch}} == 'x86_64'
+    with:
+      uri: https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_amd64.tar.gz
+      expected-sha256: 9f35cf4478d58b055287c58212a6ef92a5389daff34e7ed772e55cc10682179a
+  - uses: fetch
+    if: ${{build.arch}} == 'aarch64'
+    with:
+      uri:  https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_arm64.tar.gz
+      expected-sha256: bbecce2557d744455e747f160bb97bb101b63e2726da95b2c40781a660ee405e
+  - runs: |
+      set +x 
+      mkdir -p "${{targets.destdir}}"
+      # only if task package is available
+      if [ -f task ];
+      then
+        install -Dm755 task /usr/local/bin/task
+      fi

@@ -1,0 +1,68 @@
+# https://taskfile.dev
+
+version: "3"
+
+env:
+  NAME: gitops-devcontainer
+  IMAGE_NAME: "kameshsampath/{{.NAME}}"
+  IMAGE_TAG: v0.0.1-next
+
+includes:
+  helm:
+    taskfile: ./helm/Taskfile.yaml
+  argocd:
+    taskfile: ./argocd/Taskfile.yaml
+  crane:
+    taskfile: ./crane/Taskfile.yaml
+  flux:
+    taskfile: ./flux/Taskfile.yaml
+  k3d:
+    taskfile: ./k3d/Taskfile.yaml
+  kubectl:
+    taskfile: ./kubectl/Taskfile.yaml
+  kustomize:
+    taskfile: ./kustomize/Taskfile.yaml
+  taskfile:
+    taskfile: ./taskfile/Taskfile.yaml
+  user_settings:
+    taskfile: ./dev-user-settings/Taskfile.yaml
+  dev_tools:
+    taskfile: ./dev-tools/Taskfile.yaml
+  vscode_devcontainer:
+    taskfile: ./vscode-devcontainer/Taskfile.yaml
+  
+tasks:
+  gen_key:
+    silent: true
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange keygen
+  build_packages:
+    silent: false
+    cmds:
+      - task: argocd:package
+      - task: dev_tools:package
+      - task: crane:package
+      - task: flux:package
+      - task: helm:package
+      - task: k3d:package
+      - task: kubectl:package
+      - task: kustomize:package
+      - task: taskfile:package
+      - task: user_settings:package
+      - task: vscode_devcontainer:package
+  build_container:
+    silent: true
+    cmds:
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}.tar --debug
+  clean:
+    silent: true
+    cmds:
+      - rm -rf packages
+      - rm -rf dist
+      - mkdir -p dist packages
+  test:
+    silent: true
+    dir: test
+    cmds:
+     - bats tests.bats
+  
