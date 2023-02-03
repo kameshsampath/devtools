@@ -8,7 +8,7 @@ package:
     - arm64
   copyright:
     - paths:
-      - "*"
+        - "*"
       license: Apache License 2.0
   dependencies:
     runtime:
@@ -25,18 +25,21 @@ environment:
       - kubectx
 
 pipeline:
-  - uses: fetch
-    if: ${{build.arch}} == 'x86_64'
-    with:
-      uri: https://dl.k8s.io/v${{package.version}}/bin/linux/amd64/kubectl
-      extract: false
-      expected-sha256: d8e9cd9bb073ff09e2f2a74cf48e94a9b9d4f2fa2e2dd91b68b01f64e7061a3b
-  - uses: fetch
-    if: ${{build.arch}} == 'aarch64'
-    with:
-      uri: https://dl.k8s.io/v${{package.version}}/bin/linux/arm64/kubectl
-      extract: false
-      expected-sha256: 3a0fa419264b3df077bc8220d721d6cbef6cc944014d9337adfd4434ac23bebf
+  - assertions:
+      required-steps: 1
+    pipeline:
+      - uses: fetch
+        if: ${{build.arch}} == 'x86_64'
+        with:
+          uri: https://dl.k8s.io/v${{package.version}}/bin/linux/amd64/kubectl
+          extract: false
+          expected-sha256: d8e9cd9bb073ff09e2f2a74cf48e94a9b9d4f2fa2e2dd91b68b01f64e7061a3b
+      - uses: fetch
+        if: ${{build.arch}} == 'aarch64'
+        with:
+          uri: https://dl.k8s.io/v${{package.version}}/bin/linux/arm64/kubectl
+          extract: false
+          expected-sha256: 3a0fa419264b3df077bc8220d721d6cbef6cc944014d9337adfd4434ac23bebf
   - runs: |
       set +x 
       mkdir -p "${{targets.destdir}}"

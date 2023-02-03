@@ -8,7 +8,7 @@ package:
     - arm64
   copyright:
     - paths:
-      - "*"
+        - "*"
       license: MIT
   dependencies:
     runtime:
@@ -23,16 +23,21 @@ environment:
       - ca-certificates-bundle
 
 pipeline:
-  - uses: fetch
-    if: ${{build.arch}} == 'x86_64'
-    with:
-      uri: https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_amd64.tar.gz
-      expected-sha256: 9f35cf4478d58b055287c58212a6ef92a5389daff34e7ed772e55cc10682179a
-  - uses: fetch
-    if: ${{build.arch}} == 'aarch64'
-    with:
-      uri:  https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_arm64.tar.gz
-      expected-sha256: bbecce2557d744455e747f160bb97bb101b63e2726da95b2c40781a660ee405e
+  - assertions:
+      required-steps: 1
+    pipeline:
+      - uses: fetch
+        if: ${{build.arch}} == 'x86_64'
+        with:
+          uri: https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_amd64.tar.gz
+          expected-sha256: 9f35cf4478d58b055287c58212a6ef92a5389daff34e7ed772e55cc10682179a
+          strip-components: 0
+      - uses: fetch
+        if: ${{build.arch}} == 'aarch64'
+        with:
+          uri: https://github.com/go-task/task/releases/download/v${{package.version}}/task_linux_arm64.tar.gz
+          expected-sha256: bbecce2557d744455e747f160bb97bb101b63e2726da95b2c40781a660ee405e
+          strip-components: 0
   - runs: |
       set +x 
       mkdir -p "${{targets.destdir}}"

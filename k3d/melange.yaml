@@ -8,7 +8,7 @@ package:
     - arm64
   copyright:
     - paths:
-      - "*"
+        - "*"
       license: Apache License 2.0
   dependencies:
     runtime:
@@ -23,18 +23,21 @@ environment:
       - ca-certificates-bundle
 
 pipeline:
-  - uses: fetch
-    if: ${{build.arch}} == 'x86_64'
-    with:
-      uri: https://github.com/k3d-io/k3d/releases/download/v${{package.version}}/k3d-linux-amd64
-      extract: false
-      expected-sha256: c54218d5bf6cb6e74987bf21f7820483f581b00c49fee11dbdb8c17c7829a025
-  - uses: fetch
-    if: ${{build.arch}} == 'aarch64'
-    with:
-      uri: https://github.com/k3d-io/k3d/releases/download/v${{package.version}}/k3d-linux-arm64
-      extract: false
-      expected-sha256: c8ceb55ed2ffe2015b915848d0b6eaa72dbc1358270dee4e0c12358c16231d40
+  - assertions:
+      required-steps: 1
+    pipeline:
+      - uses: fetch
+        if: ${{build.arch}} == 'x86_64'
+        with:
+          uri: https://github.com/k3d-io/k3d/releases/download/v${{package.version}}/k3d-linux-amd64
+          extract: false
+          expected-sha256: c54218d5bf6cb6e74987bf21f7820483f581b00c49fee11dbdb8c17c7829a025
+      - uses: fetch
+        if: ${{build.arch}} == 'aarch64'
+        with:
+          uri: https://github.com/k3d-io/k3d/releases/download/v${{package.version}}/k3d-linux-arm64
+          extract: false
+          expected-sha256: c8ceb55ed2ffe2015b915848d0b6eaa72dbc1358270dee4e0c12358c16231d40
   - runs: |
       set +x 
       DEST_DIR="${{targets.destdir}}/usr/local/bin"

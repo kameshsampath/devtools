@@ -8,7 +8,8 @@ tasks:
     sources:
       - helm/melange.yaml
     generates:
-      - packages/**/helm-3.11.0-r0.apk
+      - packages/aarch64/helm-3.11.0-r0.apk
+      - packages/x86_64/helm-3.11.0-r0.apk
     cmds:
-      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --signing-key /work/melange.rsa helm/melange.yaml
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build --arch=arm64,amd64 --signing-key /work/melange.rsa helm/melange.yaml
   

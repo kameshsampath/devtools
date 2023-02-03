@@ -8,36 +8,64 @@ env:
   IMAGE_TAG: v0.0.1-next
 
 includes:
-  helm:
-    taskfile: ./helm/Taskfile.yaml
   argocd:
     taskfile: ./argocd/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   crane:
     taskfile: ./crane/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   flux:
     taskfile: ./flux/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
+  helm:
+    taskfile: ./helm/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   k3d:
     taskfile: ./k3d/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   kubectl:
     taskfile: ./kubectl/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   kustomize:
     taskfile: ./kustomize/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   taskfile:
     taskfile: ./taskfile/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   user_settings:
     taskfile: ./dev-user-settings/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   dev_tools:
     taskfile: ./dev-tools/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   vscode_devcontainer:
     taskfile: ./vscode-devcontainer/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   
 tasks:
+  apko_build_help:
+    silent: true
+    cmds:
+      - docker run -it --rm cgr.dev/chainguard/apko build --help
+  apko_publish_help:
+    silent: true
+    cmds:
+      - docker run -it --rm cgr.dev/chainguard/apko publish --help
+  melange_build_help:
+    silent: true
+    cmds:
+      - docker run -it --rm cgr.dev/chainguard/melange build --help
   gen_key:
     silent: true
+    status:
+      - test -f melange.rsa.pub
+      - test -f melange.rsa
     cmds:
       - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange keygen
   build_packages:
     silent: false
+    deps:
+      - gen_key
     cmds:
       - task: argocd:package
       - task: dev_tools:package
@@ -52,8 +80,19 @@ tasks:
       - task: vscode_devcontainer:package
   build_container:
     silent: true
+    deps:
+      - build_packages
+    sources:
+      - "{{.TASKFILE_DIR}}/image.yaml"
+    generates:
+      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer.tar"
+      - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.spdx.json"
+      - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.cdx"
+      - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.cdx"
+      - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.spdx.json"
     cmds:
-      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}.tar --debug
+      - docker pull cgr.dev/chainguard/apko
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=amd64,arm64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}.tar --debug
   clean:
     silent: true
     cmds:
@@ -64,5 +103,5 @@ tasks:
     silent: true
     dir: test
     cmds:
-     - bats tests.bats
+     - ./tests.bats
   

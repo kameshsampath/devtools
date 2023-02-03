@@ -8,7 +8,8 @@ tasks:
     sources:
       - kubectl/melange.yaml
     generates:
-      - packages/**/kubectl-1.24.10-r0.apk
+      - packages/aarch64/kubectl-1.24.10-r0.apk
+      - packages/x86_64/kubectl-1.24.10-r0.apk
     cmds:
-      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --signing-key /work/melange.rsa kubectl/melange.yaml
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build  --arch=arm64,amd64 --signing-key /work/melange.rsa kubectl/melange.yaml
   

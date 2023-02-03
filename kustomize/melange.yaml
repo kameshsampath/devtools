@@ -8,7 +8,7 @@ package:
     - arm64
   copyright:
     - paths:
-      - "*"
+        - "*"
       license: Apache License 2.0
   dependencies:
     runtime:
@@ -23,16 +23,21 @@ environment:
       - ca-certificates-bundle
 
 pipeline:
-  - uses: fetch
-    if: ${{build.arch}} == 'x86_64'
-    with:
-      uri: https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${{package.version}}/kustomize_v${{package.version}}_linux_amd64.tar.gz
-      expected-sha256: 2e8c28a80ce213528251f489db8d2dcbea7c63b986c8f7595a39fc76ff871cd7
-  - uses: fetch
-    if: ${{build.arch}} == 'aarch64'
-    with:
-      uri: https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${{package.version}}/kustomize_v${{package.version}}_linux_arm64.tar.gz
-      expected-sha256: e97b12a83e7b9b0407cac97cac4c25bc135c42383bd3764d5544e32c96542eca
+  - assertions:
+      required-steps: 1
+    pipeline:
+      - uses: fetch
+        if: ${{build.arch}} == 'x86_64'
+        with:
+          uri: https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${{package.version}}/kustomize_v${{package.version}}_linux_amd64.tar.gz
+          expected-sha256: 2e8c28a80ce213528251f489db8d2dcbea7c63b986c8f7595a39fc76ff871cd7
+          strip-components: 0
+      - uses: fetch
+        if: ${{build.arch}} == 'aarch64'
+        with:
+          uri: https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${{package.version}}/kustomize_v${{package.version}}_linux_arm64.tar.gz
+          expected-sha256: e97b12a83e7b9b0407cac97cac4c25bc135c42383bd3764d5544e32c96542eca
+          strip-components: 0
   - runs: |
       set +x 
       DEST_DIR="${{targets.destdir}}/usr/local/bin"
