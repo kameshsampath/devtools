@@ -40,9 +40,11 @@ pipeline:
           strip-components: 0
   - runs: |
       set +x 
-      mkdir -p "${{targets.destdir}}"
+      ls -ltr 
+      DEST_DIR="${{targets.destdir}}/usr/local/bin"
+      mkdir -p "${DEST_DIR}"
       # only if task package is available
       if [ -f task ];
       then
-        install -Dm755 task /usr/local/bin/task
+        install -Dm755 task $DEST_DIR/task
       fi

@@ -85,14 +85,27 @@ tasks:
     sources:
       - "{{.TASKFILE_DIR}}/image.yaml"
     generates:
-      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer.tar"
+      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer_arm64.tar"
+      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer_amd64.tar"
       - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.spdx.json"
       - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.cdx"
       - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.cdx"
       - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.spdx.json"
     cmds:
       - docker pull cgr.dev/chainguard/apko
-      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=amd64,arm64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}.tar --debug
+      - mkdir -p "{{.TASKFILE_DIR}}/dist"
+      - task: build_container_arm64
+      - task: build_container_amd64
+  build_container_arm64:
+    silent: true
+    internal: true
+    cmds:
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=arm64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}_arm64.tar --debug
+  build_container_amd64:
+    silent: true
+    internal: true
+    cmds:
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=amd64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}_amd64.tar --debug
   clean:
     silent: true
     cmds:
