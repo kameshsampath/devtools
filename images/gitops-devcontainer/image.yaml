@@ -1,0 +1,63 @@
+# Copyright 2022 Kamesh Sampath<kamesh.sampath@hotmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# GITOPS DEVELOPMENT ENVIRONMENT
+#
+# This image configuration is used by the apko development environment 
+# shell script. It preconfigures some tools to make them available in 
+# the dev shell.
+#
+archs:
+- amd64
+- arm64
+
+include: github.com/chainguard-dev/apko/examples/alpine-base.yaml@main
+
+contents:
+  keyring:
+    - https://github.com/kameshsampath/devtools/blob/13af8ad5627c85d4b54bf0cd8886dfa76ac82243/melange.rsa.pub
+  repositories:
+    - '@local /work/packages'
+    - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    - https://dl-cdn.alpinelinux.org/alpine/edge/community
+  packages:
+    - "argocd@local"
+    - "crane@local"
+    - "cosign@local"
+    - "dev-user-settings@local"
+    - "dev-tools@local"
+    - "flux@local"
+    - "helm@local"
+    - "k3d@local"
+    - "ko@local"
+    - "kubectl@local"
+    - "kustomize@local"
+    - "taskfile@local"
+    - "vscode-devcontainer@local"
+
+users:
+  - username: dev
+    uid: 10000
+
+groups:
+  - groupname: dev
+    gid: 10000
+
+work-dir: /home/dev
+
+environment:
+  KUBECONFIG: /home/dev/.kube/config
+  PATH: /home/dev/.local/bin:/usr/local/bin:/usr/sbin:/sbin:/usr/bin:/bin
+
+

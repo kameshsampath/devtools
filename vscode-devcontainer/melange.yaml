@@ -12,6 +12,11 @@ package:
       license: Apache License 2.0
   dependencies:
     runtime:
+      - ca-certificates-bundle
+      - git
+      - musl
+      - libgcc
+      - libstdc++
 
 environment:
   contents:
@@ -21,10 +26,6 @@ environment:
     packages:
       - busybox
       - ca-certificates-bundle
-      - git
-      - musl
-      - libgcc
-      - libstdc++
      
 pipeline:
   - runs: mkdir -p "${{targets.destdir}}"

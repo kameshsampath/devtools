@@ -1,0 +1,66 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  kube_devtools:
+    desc: |
+      Build the Kubernetes Dev Tools image with all the the tools that are needed for building and deploying applications using kubernetes
+    silent: true
+    cmds:
+      - docker pull cgr.dev/chainguard/apko
+      - mkdir -p {{.DEST_DIR}}
+      - task: image_arm64
+        vars:
+          DEST_DIR: "{{.DEST_DIR}}"
+          PUBLISH_REPO: "{{.PUBLISH_REPO}}"
+          IMAGE_FILE: "{{.IMAGE_FILE}}"
+      - task: image_amd64
+        vars:
+          DEST_DIR: "{{.DEST_DIR}}"
+          PUBLISH_REPO: "{{.PUBLISH_REPO}}"
+          IMAGE_FILE: "{{.IMAGE_FILE}}"
+    vars:
+      NAME: kube-devtools
+      DEST_DIR: "{{.ROOT_DIR}}/dist/{{.NAME}}"
+      IMAGE_NAME: "docker.io/kameshsampath/{{.NAME}}"
+      IMAGE_TAG:
+        sh: svu next --strip-prefix
+      PUBLISH_REPO: "{{.IMAGE_NAME}}:{{.IMAGE_TAG}}"
+      IMAGE_FILE: "images/kube-devtools/image.yaml"
+
+  gitops_devcontainer:
+    desc: |
+      Build the GitOps Dev Tools image with all the the tools that are needed for building and deploying applications using GitOps on Kubernetes
+    silent: true
+    cmds:
+      - docker pull cgr.dev/chainguard/apko
+      - mkdir -p "{{.DEST_DIR}}"
+      - task: image_arm64
+        vars:
+          DEST_DIR: "{{.DEST_DIR}}"
+          PUBLISH_REPO: "{{.IMAGE_NAME}}:{{.IMAGE_TAG}}"
+          IMAGE_FILE: "gitops-devcontainer/image.yaml"
+      - task: image_amd64
+        vars:
+          DEST_DIR: "{{.DEST_DIR}}"
+          PUBLISH_REPO: "{{.IMAGE_NAME}}:{{.IMAGE_TAG}}"
+          IMAGE_FILE: "gitops-devcontainer/image.yaml"
+    vars:
+      NAME: gitops-devcontainer
+      DEST_DIR: "{{.ROOT_DIR}}/dist/{{.NAME}}"
+      IMAGE_NAME: "docker.io/kameshsampath/{{.NAME}}"
+      IMAGE_TAG:
+        sh: svu next --strip-prefix
+
+  # builds the images
+  image_arm64:
+    silent: false
+    internal: true
+    cmds:
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=arm64 {{.IMAGE_FILE}} {{.PUBLISH_REPO}} {{.DEST_DIR}}/container_arm64.tar --debug
+  image_amd64:
+    silent: true
+    internal: true
+    cmds:
+      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=amd64 {{.IMAGE_FILE}} {{.PUBLISH_REPO}} {{.DEST_DIR}}/container_amd64.tar --debug

@@ -8,11 +8,17 @@ package:
     - amd64
   copyright:
     - paths:
-      - "*"
+        - "*"
       license: Apache License 2.0
   dependencies:
     runtime:
-
+      - bash
+      - curl
+      - ca-certificates-bundle
+      - bash-completion
+      - sudo
+      - shadow
+      - starship
 environment:
   contents:
     repositories:
@@ -22,21 +28,22 @@ environment:
       - alpine-baselayout-data
       - busybox
       - ca-certificates-bundle
-      - bash
       - curl
-      - bash-completion
-      - sudo
-      - starship
-     
+
 pipeline:
-  - if: ${{build.arch}} == 'x86_64' || ${{build.arch}} == 'aarch64'
-    runs: |
+  - uses: fetch
+    with:
+      uri: https://raw.githubusercontent.com/ahmetb/kubectl-aliases/master/.kubectl_aliases
+      extract: false
+      expected-sha256: 8c54b5bc800a51e013245b42ae79073177684799ee958474fa17d1b3175b7b3d
+  - runs: |
       set +x 
-      USER_HOME="${{targets.destdir}}/home/dev"
-      SUDOERSD_DEV="${{targets.destdir}}/etc/sudoers.d"
+      ls -ltra
+      USER_HOME="${{targets.destdir}}"/home/dev
+      SUDOERS_DIR="${{targets.destdir}}"/etc/sudoers.d
       mkdir -p $USER_HOME
-      mkdir -p $SUDOERSD_DEV
-      echo 'dev ALL=\(root\) NOPASSWD:ALL' >  $SUDOERSD_DEV/dev
-      chmod 0440  $SUDOERSD_DEV/dev
-      curl -sL https://gist.githubusercontent.com/kameshsampath/49927b980080f9bec1bda78034eb54bd/raw/45b4725a4b96b0feacc3fac80344b7bf3231ae9d/dev-user-bashrc -o  $SUDOERSD_DEV/.bashrc
-      curl -sL https://raw.githubusercontent.com/ahmetb/kubectl-aliases/master/.kubectl_aliases -o $USER_HOME/.kubectl_aliases
+      mkdir -p $SUDOERS_DIR
+      mv suoders-dev $SUDOERS_DIR/dev
+      chmod 0440  $SUDOERS_DIR/dev
+      mv dev-user-bashrc $USER_HOME/.bashrc
+      mv .kubectl_aliases $USER_HOME/.kubectl_aliases

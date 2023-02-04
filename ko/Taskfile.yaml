@@ -1,0 +1,15 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - ko/melange.yaml
+    generates:
+      - packages/aarch64/ko-0.12.0-r0.apk
+      - packages/x86_64/ko-0.12.0-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build --arch=arm64,amd64 --signing-key /work/melange.rsa ko/melange.yaml
+  

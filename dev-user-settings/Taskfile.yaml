@@ -12,4 +12,3 @@ tasks:
       - packages/x86_64/dev-user-settings-0.0.1-r0.apk
     cmds:
       - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build --arch=arm64,amd64 --signing-key /work/melange.rsa dev-user-settings/melange.yaml
-  

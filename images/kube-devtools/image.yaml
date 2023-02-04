@@ -22,25 +22,28 @@ archs:
 - amd64
 - arm64
 
-# include: github.com/chainguard-dev/apko/examples/alpine-base.yaml@main
-
 contents:
   keyring:
     - /work/melange.rsa.pub
+    - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    - https://dl-cdn.alpinelinux.org/alpine/edge/community
   repositories:
+    - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    - https://dl-cdn.alpinelinux.org/alpine/edge/community
     - '@local /work/packages'
   packages:
     - "argocd@local"
     - "crane@local"
+    - "cosign@local"
     - "dev-user-settings@local"
     - "dev-tools@local"
     - "flux@local"
     - "helm@local"
     - "k3d@local"
+    - "ko@local"
     - "kubectl@local"
     - "kustomize@local"
     - "taskfile@local"
-    - "vscode-devcontainer@local"
 
 users:
   - username: dev

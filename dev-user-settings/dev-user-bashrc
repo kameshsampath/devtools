@@ -1,0 +1,7 @@
+if [ -z "${USER}" ]; then export USER=$(whoami); fi
+source /usr/share/bash-completion/bash_completion
+source ~/.kubectl_aliases
+alias k=kubectl
+complete -o default -F __start_kubectl k
+source <(kubectl completion bash)
+eval '$(starship init bash)'

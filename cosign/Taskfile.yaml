@@ -1,0 +1,15 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  package:
+    silent: true
+    sources:
+      - cosign/melange.yaml
+    generates:
+      - packages/aarch64/cosign-1.13.1-r0.apk
+      - packages/x86_64/cosign-1.13.1-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange build --arch=arm64,amd64 --signing-key /work/melange.rsa cosign/melange.yaml
+  

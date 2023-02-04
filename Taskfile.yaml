@@ -11,6 +11,9 @@ includes:
   argocd:
     taskfile: ./argocd/Taskfile.yaml
     dir: "{{.ROOT_DIR}}"
+  cosign:
+    taskfile: ./cosign/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   crane:
     taskfile: ./crane/Taskfile.yaml
     dir: "{{.ROOT_DIR}}"
@@ -22,6 +25,9 @@ includes:
     dir: "{{.ROOT_DIR}}"
   k3d:
     taskfile: ./k3d/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
+  ko:
+    taskfile: ./ko/Taskfile.yaml
     dir: "{{.ROOT_DIR}}"
   kubectl:
     taskfile: ./kubectl/Taskfile.yaml
@@ -41,21 +47,28 @@ includes:
   vscode_devcontainer:
     taskfile: ./vscode-devcontainer/Taskfile.yaml
     dir: "{{.ROOT_DIR}}"
+  images:
+    taskfile: ./images/Taskfile.yaml
+    dir: "{{.ROOT_DIR}}"
   
 tasks:
   apko_build_help:
+    desc: Run apko build --help
     silent: true
     cmds:
       - docker run -it --rm cgr.dev/chainguard/apko build --help
   apko_publish_help:
+    desc: Run apko publish --help
     silent: true
     cmds:
       - docker run -it --rm cgr.dev/chainguard/apko publish --help
   melange_build_help:
+    desc: Run apko melange --help
     silent: true
     cmds:
       - docker run -it --rm cgr.dev/chainguard/melange build --help
   gen_key:
+    desc: Generates keys to sign the local packages
     silent: true
     status:
       - test -f melange.rsa.pub
@@ -63,56 +76,43 @@ tasks:
     cmds:
       - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange keygen
   build_packages:
+    desc: |
+      Builds the tool packages that will be used in build tools container images
     silent: false
     deps:
       - gen_key
     cmds:
       - task: argocd:package
       - task: dev_tools:package
+      - task: cosign:package
       - task: crane:package
       - task: flux:package
       - task: helm:package
       - task: k3d:package
+      - task: ko:package
       - task: kubectl:package
       - task: kustomize:package
       - task: taskfile:package
       - task: user_settings:package
       - task: vscode_devcontainer:package
-  build_container:
+  build_containers:
+    desc: |
+      Builds tools container images
     silent: true
     deps:
       - build_packages
-    sources:
-      - "{{.TASKFILE_DIR}}/image.yaml"
-    generates:
-      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer_arm64.tar"
-      - "{{.TASKFILE_DIR}}/dist/gitops-devcontainer_amd64.tar"
-      - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.spdx.json"
-      - "{{.TASKFILE_DIR}}/dist/sbom-aarch64.cdx"
-      - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.cdx"
-      - "{{.TASKFILE_DIR}}/dist/sbom-x86_64.spdx.json"
     cmds:
-      - docker pull cgr.dev/chainguard/apko
-      - mkdir -p "{{.TASKFILE_DIR}}/dist"
-      - task: build_container_arm64
-      - task: build_container_amd64
-  build_container_arm64:
-    silent: true
-    internal: true
-    cmds:
-      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=arm64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}_arm64.tar --debug
-  build_container_amd64:
-    silent: true
-    internal: true
-    cmds:
-      - docker run -v "$PWD":/work cgr.dev/chainguard/apko build --build-arch=amd64 /work/image.yaml {{.IMAGE_NAME}}:{{.IMAGE_TAG}} /work/dist/{{.NAME}}_amd64.tar --debug
+      - task: images:kube_devtools
+      - task: images:gitops_devcontainer
   clean:
+    desc: Cleans the packages and dist directory
     silent: true
     cmds:
       - rm -rf packages
       - rm -rf dist
       - mkdir -p dist packages
   test:
+    desc: Runs tests
     silent: true
     dir: test
     cmds:

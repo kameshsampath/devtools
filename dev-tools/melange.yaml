@@ -12,17 +12,18 @@ package:
       license: Apache License 2.0
   dependencies:
     runtime:
-
+      - curl
+      - jq
+      - git
+      - wget
+      - yq
 environment:
   contents:
     repositories:
       - https://dl-cdn.alpinelinux.org/alpine/edge/main
       - https://dl-cdn.alpinelinux.org/alpine/edge/community
     packages:
-      - curl
-      - jq
-      - git
-      - wget
-      - yq
+      - busybox
+      - ca-certificates-bundle
 pipeline:
   - runs: mkdir -p "${{targets.destdir}}"
