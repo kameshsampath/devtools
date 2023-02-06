@@ -26,7 +26,9 @@ include: github.com/chainguard-dev/apko/examples/alpine-base.yaml@main
 
 contents:
   keyring:
-    - https://github.com/kameshsampath/devtools/blob/13af8ad5627c85d4b54bf0cd8886dfa76ac82243/melange.rsa.pub
+    - https://dl-cdn.alpinelinux.org/alpine/edge/main
+    - https://dl-cdn.alpinelinux.org/alpine/edge/community
+    - /work/melange.rsa.pub
   repositories:
     - '@local /work/packages'
     - https://dl-cdn.alpinelinux.org/alpine/edge/main

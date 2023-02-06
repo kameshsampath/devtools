@@ -1,0 +1,7 @@
+FROM  cgr.dev/chainguard/melange
+
+RUN apk add -X https://packages.wolfi.dev/os wget ca-certificates \
+   &&  wget https://github.com/chainguard-dev/melange/archive/main/melange-main.tar.gz \
+    && mkdir -p /usr/share/melange \
+    && tar -C /usr/share/melange -zxf melange-main.tar.gz --strip-components=3 melange-main/pkg/build/pipelines \
+    && rm melange-main.tar.gz

@@ -7,66 +7,26 @@ env:
   IMAGE_NAME: "kameshsampath/{{.NAME}}"
   IMAGE_TAG: v0.0.1-next
 
-includes:
-  argocd:
-    taskfile: ./argocd/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  cosign:
-    taskfile: ./cosign/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  crane:
-    taskfile: ./crane/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  flux:
-    taskfile: ./flux/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  helm:
-    taskfile: ./helm/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  k3d:
-    taskfile: ./k3d/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  ko:
-    taskfile: ./ko/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  kubectl:
-    taskfile: ./kubectl/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  kustomize:
-    taskfile: ./kustomize/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  taskfile:
-    taskfile: ./taskfile/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  user_settings:
-    taskfile: ./dev-user-settings/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  dev_tools:
-    taskfile: ./dev-tools/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  vscode_devcontainer:
-    taskfile: ./vscode-devcontainer/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  images:
-    taskfile: ./images/Taskfile.yaml
-    dir: "{{.ROOT_DIR}}"
-  
+
 tasks:
-  apko_build_help:
-    desc: Run apko build --help
+  build_env:
+    desc: start lima-vm to run melange and apko commands
     silent: true
     cmds:
-      - docker run -it --rm cgr.dev/chainguard/apko build --help
-  apko_publish_help:
-    desc: Run apko publish --help
+      - limactl start --tty=false devtools-build-env.yaml
+      - limactl shell devtools-build-env sudo su -c "HOME=\"${HOME}\" bash"
+
+  delete_build_env:
+    desc: stop and delete lima-vm devtools-build-env
     silent: true
     cmds:
-      - docker run -it --rm cgr.dev/chainguard/apko publish --help
-  melange_build_help:
-    desc: Run apko melange --help
+      - limactl delete --force devtools-build-env
+
+  build_melange_with_builtins:
     silent: true
     cmds:
-      - docker run -it --rm cgr.dev/chainguard/melange build --help
+      - docker buildx build -t docker.io/kameshsampath/melange --platform=linux/arm64 --platform=linux/amd64 --push -f Dockerfile .
+
   gen_key:
     desc: Generates keys to sign the local packages
     silent: true
@@ -75,6 +35,7 @@ tasks:
       - test -f melange.rsa
     cmds:
       - docker run --privileged --rm -v "${PWD}":/work cgr.dev/chainguard/melange keygen
+
   build_packages:
     desc: |
       Builds the tool packages that will be used in build tools container images
@@ -82,19 +43,13 @@ tasks:
     deps:
       - gen_key
     cmds:
-      - task: argocd:package
-      - task: dev_tools:package
-      - task: cosign:package
-      - task: crane:package
-      - task: flux:package
-      - task: helm:package
-      - task: k3d:package
-      - task: ko:package
-      - task: kubectl:package
-      - task: kustomize:package
-      - task: taskfile:package
-      - task: user_settings:package
-      - task: vscode_devcontainer:package
+      - task: argocd
+      - task: k3d
+      - task: go-task
+      - task: user_settings
+      - task: vscode_devcontainer
+      - task: yq
+
   build_containers:
     desc: |
       Builds tools container images
@@ -116,5 +71,46 @@ tasks:
     silent: true
     dir: test
     cmds:
-     - ./tests.bats
+      - ./tests.bats
+
+  #############################################################
+  ## Tasks to build packages
+  #############################################################
+  argocd:
+    cmds:
+      - task: package
+        vars:
+          PACKAGE_FILE: argocd.yaml
+          PACKAGE_NAME: argocd
+          PACKAGE_VERSION: v2.5.10
+  go-task:
+    cmds:
+      - task: package
+        vars:
+          PACKAGE_FILE: go-task.yaml
+          PACKAGE_NAME: go-task
+          PACKAGE_VERSION: v3.20.0
+  k3d:
+    cmds:
+      - task: package
+        vars:
+          PACKAGE_FILE: k3d.yaml
+          PACKAGE_NAME: k3d
+          PACKAGE_VERSION: v5.4.7
+  yq:
+    cmds:
+      - task: package
+        vars:
+          PACKAGE_FILE: yq.yaml
+          PACKAGE_NAME: yq
+          PACKAGE_VERSION: v4.38.0
   
+  package:
+    desc: builds the apk package
+    silent: false
+    internal: true
+    generates:
+      - packages/aarch64/{{.PACKAGE_NAME}}-{{.PACKAGE_VERSION}}-r0.apk
+      - packages/x86_64/{{.PACKAGE_NAME}}-{{.PACKAGE_VERSION}}-r0.apk
+    cmds:
+      - docker run --privileged --rm -v "${PWD}":/work kameshsampath/melange build --arch=arm64 --signing-key /work/melange.rsa /work/{{.PACKAGE_FILE}}

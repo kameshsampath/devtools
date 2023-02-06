@@ -25,25 +25,27 @@ archs:
 contents:
   keyring:
     - /work/melange.rsa.pub
-    - https://dl-cdn.alpinelinux.org/alpine/edge/main
-    - https://dl-cdn.alpinelinux.org/alpine/edge/community
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
   repositories:
-    - https://dl-cdn.alpinelinux.org/alpine/edge/main
-    - https://dl-cdn.alpinelinux.org/alpine/edge/community
+    - https://packages.wolfi.dev/os
     - '@local /work/packages'
   packages:
+    - cosign
+    - curl
+    - crane
+    - flux
+    - git
+    - helm
+    - jq
+    - ko
+    - kubectl
+    - kustomize
+    - wget
     - "argocd@local"
-    - "crane@local"
-    - "cosign@local"
-    - "dev-user-settings@local"
-    - "dev-tools@local"
-    - "flux@local"
-    - "helm@local"
     - "k3d@local"
-    - "ko@local"
-    - "kubectl@local"
-    - "kustomize@local"
-    - "taskfile@local"
+    - "yq@local"
+    - "go-task@local"
+    - "dev-user-settings@local"
 
 users:
   - username: dev

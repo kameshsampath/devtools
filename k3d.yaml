@@ -1,0 +1,30 @@
+package:
+  name: k3d
+  version: 5.4.7
+  epoch: 0
+  description: "k3d cli utility"
+  target-architecture:
+    - amd64
+    - arm64
+  copyright:
+    - paths:
+        - "*"
+      license: Apache License 2.0
+  dependencies:
+    runtime:
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+
+pipeline:
+  - uses: go/install
+    with:
+      package: go install github.com/k3s-io/k3d/v5
+      version: v${{package.version}}
+  - runs: |
+      ${{targets.destdir}}/usr/bin/k3d --version | grep "k3d version v5-dev"
+  - uses: strip

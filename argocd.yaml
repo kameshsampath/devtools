@@ -1,0 +1,46 @@
+package:
+  name: argocd
+  version: 2.5.10
+  epoch: 0
+  description: "argo cd cli"
+  target-architecture:
+    - amd64
+    - arm64
+  copyright:
+    - paths:
+        - "*"
+      license: Apache License 2.0
+  dependencies:
+    runtime:
+      - ca-certificates-bundle
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+    packages:
+      - busybox
+      - ca-certificates-bundle
+      - build-base
+      - go
+      - git
+      - bash
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/argoproj/argo-cd
+      branch: v${{package.version}}
+      destination: argo-cd
+  - runs: |
+      cd argo-cd
+      DEST_DIR="${{targets.destdir}}/usr/bin"
+      mkdir -p "$DEST_DIR"
+      make cli-local
+      ls -ltr dist
+      mv dist/argocd $DEST_DIR/argocd
+  - runs: |
+      ${{targets.destdir}}/usr/bin/argocd version --client| grep "argocd: v${{package.version}}"
+  - uses: strip
